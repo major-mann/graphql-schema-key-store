@@ -2,11 +2,11 @@ module.exports = createKeyStoreSchema;
 
 const createDatasource = require('@major-mann/graphql-datasource-base');
 
-async function createKeyStoreSchema({ data }) {
+async function createKeyStoreSchema({ data, name = '${name}' }) {
     const composer = await createDatasource({
         data,
         definitions: `
-            type JsonWebKey {
+            type ${name} {
                 iss: String
                 kty: String!
                 use: String
@@ -32,13 +32,13 @@ async function createKeyStoreSchema({ data }) {
                 crv: String
             }
         `,
-        rootTypes: ['JsonWebKey'],
+        rootTypes: [name],
         idFieldSelector: () => 'kid'
     });
 
-    wrapResolver(composer.getOTC('JsonWebKeyQuery'), 'find');
+    wrapResolver(composer.getOTC(`${name}Query`), 'find');
 
-    const mutationType = composer.getOTC('JsonWebKeyMutation');
+    const mutationType = composer.getOTC(`${name}Mutation`);
     wrapResolver(mutationType, 'create');
     wrapResolver(mutationType, 'upsert');
     wrapResolver(mutationType, 'update');
@@ -46,9 +46,9 @@ async function createKeyStoreSchema({ data }) {
 
     return composer;
 
-    function wrapResolver(type, name) {
-        type.setResolver(`$${name}`, type.getResolver(`$${name}`).wrap(issuerAddWrapper));
-        type.setField(name, type.getResolver(`$${name}`));
+    function wrapResolver(type, fieldName) {
+        type.setResolver(`$${fieldName}`, type.getResolver(`$${fieldName}`).wrap(issuerAddWrapper));
+        type.setField(fieldName, type.getResolver(`$${fieldName}`));
     }
 
     function issuerAddWrapper(resolver) {
