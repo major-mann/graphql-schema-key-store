@@ -30,6 +30,8 @@ async function createKeyStoreSchema({ data, name = '${name}' }) {
                 dq: String
                 qi: String
                 crv: String
+
+                created: Float
             }
         `,
         rootTypes: [name],
