@@ -1,12 +1,15 @@
 module.exports = createKeyStoreSchema;
 
+const SPLITTER = ':::';
+
 const createDatasource = require('@major-mann/graphql-datasource-base');
 
-async function createKeyStoreSchema({ data, name = '${name}' }) {
+async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
     const composer = await createDatasource({
         data,
         definitions: `
             type ${name} {
+                keyId: ID!
                 iss: String
                 kty: String!
                 use: String
@@ -34,21 +37,29 @@ async function createKeyStoreSchema({ data, name = '${name}' }) {
                 created: Float
             }
         `,
-        rootTypes: [name],
-        idFieldSelector: () => 'kid'
+        rootTypes: [name]
     });
 
-    wrapResolver(composer.getOTC(`${name}Query`), 'find');
+    wrapFindResolver(composer.getOTC(`${name}Query`), 'find');
 
     const mutationType = composer.getOTC(`${name}Mutation`);
-    wrapResolver(mutationType, 'create');
-    wrapResolver(mutationType, 'upsert');
-    wrapResolver(mutationType, 'update');
-    wrapResolver(mutationType, 'delete');
+    wrapMutationResolver(mutationType, 'create');
+    wrapMutationResolver(mutationType, 'upsert');
+    wrapMutationResolver(mutationType, 'update');
+    wrapMutationResolver(mutationType, 'delete');
 
     return composer;
 
-    function wrapResolver(type, fieldName) {
+    function wrapFindResolver(type, fieldName) {
+        type.setResolver(
+            `$${fieldName}`,
+            type.getResolver(`$${fieldName}`)
+                .wrap(issuerAddWrapper)
+        );
+        type.setField(fieldName, type.getResolver(`$${fieldName}`));
+    }
+
+    function wrapMutationResolver(type, fieldName) {
         type.setResolver(`$${fieldName}`, type.getResolver(`$${fieldName}`).wrap(issuerAddWrapper));
         type.setField(fieldName, type.getResolver(`$${fieldName}`));
     }
@@ -56,14 +67,15 @@ async function createKeyStoreSchema({ data, name = '${name}' }) {
     function issuerAddWrapper(resolver) {
         resolver.setArg('iss', { type: 'String' });
         return resolver.wrapResolve(next => params => {
+            const data = params.args.data || {};
+            data.iss = params.args.iss;
+            data.kid = params.args.kid;
             return next({
                 ...params,
                 args: {
                     ...params.args,
-                    kid: {
-                        kid: params.kid,
-                        iss: params.iss
-                    }
+                    data,
+                    keyId: [params.args.iss, params.args.kid].join(SPLITTER)
                 }
             })
         });
