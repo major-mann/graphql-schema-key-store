@@ -65,7 +65,9 @@ async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
     }
 
     function issuerAddWrapper(resolver) {
-        resolver.setArg('iss', { type: 'String' });
+        resolver.removeArg('keyId');
+        resolver.setArg('kid', { type: 'String!' });
+        resolver.setArg('iss', { type: 'String!' });
         return resolver.wrapResolve(next => params => {
             const data = params.args.data || {};
             data.iss = params.args.iss;
