@@ -64,6 +64,7 @@ async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
         rootTypes: [name]
     });
 
+    // TODO: Add documentation for find, list, create, upsert, update and delete
     wrapFindResolver(composer.getOTC(`${name}Query`), 'find');
 
     const mutationType = composer.getOTC(`${name}Mutation`);
