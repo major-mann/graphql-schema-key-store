@@ -9,103 +9,55 @@ async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
         data,
         definitions: `
             type ${name} {
-                """
-                A unique id for the underlying data source
-                """
+                # A unique id for the underlying data source
                 keyId: ID!
-                """
-                The key issuer
-                """
+                # The key issuer
                 iss: String
-                """
-                The key type represented by the key data
-                """
+                # The key type represented by the key data
                 kty: String!
-                """
-                The use cases for the key
-                """
+                # The use cases for the key
                 use: String
-                """
-                The operations the key is valid for
-                """
+                # The operations the key is valid for
                 key_ops: [String!]
-                """
-                The algorithm the key should be applied with
-                """
+                # The algorithm the key should be applied with
                 alg: String
-                """
-                The unique ID (per issuer) of the key
-                """
+                # The unique ID (per issuer) of the key
                 kid: String
-                """
-                X.509 URL
-                """
+                # X.509 URL
                 x5u: String
-                """
-                X.509 Certificate Chain
-                """
+                # X.509 Certificate Chain
                 x5c: String
-                """
-                X.509 Certificate SHA-1 Thumbprint
-                """
+                # X.509 Certificate SHA-1 Thumbprint
                 x5t: String
-                """
-                X.509 Certificate SHA-256 Thumbprint
-                """
+                # X.509 Certificate SHA-256 Thumbprint
                 x5t_S256: String
 
-                """
-                RSA public exponent
-                """
+                # RSA public exponent
                 e: String
-                """
-                RSA private exponent
-                """
+                # RSA private exponent
                 d: String
-                """
-                Symmetric key
-                """
+                # Symmetric key
                 k: String
-                """
-                RSA modulus
-                """
+                # RSA modulus
                 n: String
-                """
-                RSA prime factor
-                """
+                # RSA prime factor
                 p: String
-                """
-                RSA prime factor
-                """
+                # RSA prime factor
                 q: String
-                """
-                x coordinate for Elliptic Curve
-                """
+                # x coordinate for Elliptic Curve
                 x: String
-                """
-                y coordinate for Elliptic Curve
-                """
+                # y coordinate for Elliptic Curve
                 y: String
-                """
-                d mod (p - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
-                """
+                # d mod (p - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
                 dp: String
-                """
-                d mod (1 - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
-                """
+                # d mod (1 - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
                 dq: String
-                """
-                q⁻¹ mod p - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
-                """
+                # q⁻¹ mod p - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
                 qi: String
-                """
-                The cryptographic curve to use with the key
-                """
+                # The cryptographic curve to use with the key
                 crv: String
 
-                """
-                The time (ms since Unix epoch) the key was created
-                """
+                # The time (ms since Unix epoch) the key was created
                 created: Float
             }
         `,
