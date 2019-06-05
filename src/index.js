@@ -1,10 +1,10 @@
 module.exports = createKeyStoreSchema;
 
-const SPLITTER = ':::';
+const SPLITTER = `:::`;
 
-const createDatasource = require('@major-mann/graphql-datasource-base');
+const createDatasource = require(`@major-mann/graphql-datasource-base`);
 
-async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
+async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     const composer = await createDatasource({
         data,
         definitions: `
@@ -12,7 +12,9 @@ async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
                 # A unique id for the underlying data source
                 keyId: ID!
                 # The key issuer
-                iss: String
+                iss: String!
+                # The audience the key is intended for
+                aud: String!
                 # The key type represented by the key data
                 kty: String!
                 # The use cases for the key
@@ -65,13 +67,13 @@ async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
     });
 
     // TODO: Add documentation for find, list, create, upsert, update and delete
-    wrapFindResolver(composer.getOTC(`${name}Query`), 'find');
+    wrapFindResolver(composer.getOTC(`${name}Query`), `find`);
 
     const mutationType = composer.getOTC(`${name}Mutation`);
-    wrapMutationResolver(mutationType, 'create');
-    wrapMutationResolver(mutationType, 'upsert');
-    wrapMutationResolver(mutationType, 'update');
-    wrapMutationResolver(mutationType, 'delete');
+    wrapMutationResolver(mutationType, `create`);
+    wrapMutationResolver(mutationType, `upsert`);
+    wrapMutationResolver(mutationType, `update`);
+    wrapMutationResolver(mutationType, `delete`);
 
     return composer;
 
@@ -79,32 +81,34 @@ async function createKeyStoreSchema({ data, name = 'JsonWebKey' }) {
         type.setResolver(
             `$${fieldName}`,
             type.getResolver(`$${fieldName}`)
-                .wrap(issuerAddWrapper)
+                .wrap(issuerAudienceAddWrapper)
         );
         type.setField(fieldName, type.getResolver(`$${fieldName}`));
     }
 
     function wrapMutationResolver(type, fieldName) {
-        type.setResolver(`$${fieldName}`, type.getResolver(`$${fieldName}`).wrap(issuerAddWrapper));
+        type.setResolver(`$${fieldName}`, type.getResolver(`$${fieldName}`).wrap(issuerAudienceAddWrapper));
         type.setField(fieldName, type.getResolver(`$${fieldName}`));
     }
 
-    function issuerAddWrapper(resolver) {
-        resolver.removeArg('keyId');
-        resolver.setArg('kid', { type: 'String!' });
-        resolver.setArg('iss', { type: 'String!' });
+    function issuerAudienceAddWrapper(resolver) {
+        resolver.removeArg(`keyId`);
+        resolver.setArg(`kid`, { type: `String!` });
+        resolver.setArg(`iss`, { type: `String!` });
+        resolver.setArg(`aud`, { type: `String!` });
         return resolver.wrapResolve(next => params => {
             const data = params.args.data || {};
             data.iss = params.args.iss;
             data.kid = params.args.kid;
+            data.aud = params.args.aud;
             return next({
                 ...params,
                 args: {
                     ...params.args,
                     data,
-                    keyId: [params.args.iss, params.args.kid].join(SPLITTER)
+                    keyId: [params.args.iss, params.args.aud, params.args.kid].join(SPLITTER)
                 }
-            })
+            });
         });
     }
 }
