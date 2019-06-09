@@ -1,6 +1,6 @@
 {
     "name": "@major-mann/graphql-schema-jwk",
-    "version": "0.0.17",
+    "version": "0.0.18",
     "description": "A schema for interacting with JWKs (with optional issuer attached to the key)",
     "main": "src/index.js",
     "scripts": {
@@ -14,6 +14,6 @@
     "author": "Calvin Mann <calvinmann@gmail.com>",
     "license": "MIT",
     "dependencies": {
-        "@major-mann/graphql-datasource-base": "^0.0.29"
+        "@major-mann/graphql-datasource-base": "^0.0.30"
     }
 }
