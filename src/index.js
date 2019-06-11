@@ -7,6 +7,8 @@ const createDatasource = require(`@major-mann/graphql-datasource-base`);
 async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     const composer = await createDatasource({
         data,
+        // Note: audience is purposefully unrequired since it is always required, and added
+        //  in the mutation resolvers.
         definitions: `
             type ${name} {
                 # A unique id for the underlying data source
@@ -14,7 +16,7 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
                 # The key issuer
                 iss: String!
                 # The audience the key is intended for
-                aud: String!
+                aud: String
                 # The key type represented by the key data
                 kty: String!
                 # The use cases for the key
