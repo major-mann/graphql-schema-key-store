@@ -74,10 +74,8 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
 
     const queryType = composer.getOTC(`${name}Query`);
     wrapFindResolver(queryType, `find`);
-    extendFields(queryType, {
-        find: { description: `Searches for a given key by "kid", "iss" and "aud"` },
-        list: { description: `Searches through all keys using the supplied filters` }
-    });
+    queryType.getResolver(`$find`).setDescription(`Searches for a given key by "kid", "iss" and "aud"`);
+    queryType.getResolver(`$list`).setDescription(`Searches through all keys using the supplied filters`);
 
 
     const mutationType = composer.getOTC(`${name}Mutation`);
@@ -86,13 +84,15 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     wrapMutationResolver(mutationType, `update`);
     wrapMutationResolver(mutationType, `delete`);
 
-    extendFields(mutationType, {
-        create: { description: `Creates a new service key` },
-        upsert: { description: `Creates a new service key if the given "kid", "iss" and "aud" combination does not exist, ` +
-            `or updates it if it does exist` },
-        update: { description: `Updates the service key with the given "kid", "iss" and "aud" combination` },
-        delete: { description: `Deletes the service key with the given "kid", "iss" and "aud" combination` }
-    });
+    mutationType.getResolver(`$create`)
+        .setDescription(`Creates a new service key`);
+    mutationType.getResolver(`$upsert`)
+        .setDescription(`Creates a new service key if the given "kid", "iss" and "aud" combination does not exist, ` +
+            `or updates it if it does exist`);
+    mutationType.getResolver(`$update`)
+        .setDescription(`Updates the service key with the given "kid", "iss" and "aud" combination`);
+    mutationType.getResolver(`$delete`)
+        .setDescription(`Deletes the service key with the given "kid", "iss" and "aud" combination`);
 
     return composer;
 
