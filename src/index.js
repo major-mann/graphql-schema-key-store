@@ -73,16 +73,12 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     });
 
     const queryType = composer.getOTC(`${name}Query`);
-    wrapFindResolver(queryType, `find`);
     queryType.getResolver(`$find`).setDescription(`Searches for a given key by "kid", "iss" and "aud"`);
     queryType.getResolver(`$list`).setDescription(`Searches through all keys using the supplied filters`);
+    wrapResolver(queryType, `find`);
 
 
     const mutationType = composer.getOTC(`${name}Mutation`);
-    wrapMutationResolver(mutationType, `create`);
-    wrapMutationResolver(mutationType, `upsert`);
-    wrapMutationResolver(mutationType, `update`);
-    wrapMutationResolver(mutationType, `delete`);
 
     mutationType.getResolver(`$create`)
         .setDescription(`Creates a new service key`);
@@ -94,20 +90,20 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     mutationType.getResolver(`$delete`)
         .setDescription(`Deletes the service key with the given "kid", "iss" and "aud" combination`);
 
+    wrapResolver(mutationType, `create`);
+    wrapResolver(mutationType, `upsert`);
+    wrapResolver(mutationType, `update`);
+    wrapResolver(mutationType, `delete`);
+
     return composer;
 
-    function wrapFindResolver(type, fieldName) {
-        type.setResolver(
-            `$${fieldName}`,
-            type.getResolver(`$${fieldName}`)
-                .wrap(issuerAudienceAddWrapper)
-        );
-        type.setField(fieldName, type.getResolver(`$${fieldName}`));
-    }
-
-    function wrapMutationResolver(type, fieldName) {
-        type.setResolver(`$${fieldName}`, type.getResolver(`$${fieldName}`).wrap(issuerAudienceAddWrapper));
-        type.setField(fieldName, type.getResolver(`$${fieldName}`));
+    function wrapResolver(type, fieldName) {
+        const resolverName = `$${fieldName}`;
+        const original = type.getResolver(resolverName);
+        const wrapped = type.getResolver(resolverName).wrap(issuerAudienceAddWrapper);
+        wrapped.setDescription(original.getDescription());
+        type.setResolver(resolverName, wrapped);
+        type.setField(fieldName, wrapped);
     }
 
     function issuerAudienceAddWrapper(resolver) {
