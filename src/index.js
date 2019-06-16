@@ -44,7 +44,7 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     });
 
     // Add some documentation
-    composer.getOTC(name).extendFields({
+    extendFields(composer.getOTC(name), {
         keyId: { description: `A unique id for the underlying data source` },
         iss: { description: `The key issuer` },
         aud: { description: `The audience the key is intended for` },
@@ -75,7 +75,7 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     // TODO: Add documentation for find, list, create, upsert, update and delete
     const queryType = composer.getOTC(`${name}Query`);
     wrapFindResolver(queryType, `find`);
-    queryType.extendFields({
+    extendFields(queryType, {
         find: { description: `Searches for a given key by "kid", "iss" and "aud"` },
         list: { description: `Searches through all keys using the supplied filters` }
     });
@@ -87,7 +87,7 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
     wrapMutationResolver(mutationType, `update`);
     wrapMutationResolver(mutationType, `delete`);
 
-    queryType.extendFields({
+    extendFields(mutationType, {
         create: { description: `Creates a new service key` },
         upsert: { description: `Creates a new service key if the given "kid", "iss" and "aud" combination does not exist, ` +
             `or updates it if it does exist` },
@@ -130,5 +130,9 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
                 }
             });
         });
+    }
+
+    function extendFields(type, data) {
+        Object.keys(data).forEach(key => type.extendField(key, data[key]));
     }
 }
