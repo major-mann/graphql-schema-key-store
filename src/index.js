@@ -72,7 +72,6 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
         created: { description: `The time (ms since Unix epoch) the key was created` }
     });
 
-    // TODO: Add documentation for find, list, create, upsert, update and delete
     const queryType = composer.getOTC(`${name}Query`);
     wrapFindResolver(queryType, `find`);
     extendFields(queryType, {
