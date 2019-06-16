@@ -1,6 +1,6 @@
 {
     "name": "@major-mann/graphql-schema-jwk",
-    "version": "0.0.26",
+    "version": "0.0.27",
     "description": "A schema for interacting with JWKs (with optional issuer attached to the key)",
     "main": "src/index.js",
     "scripts": {
