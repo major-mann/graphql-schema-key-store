@@ -11,71 +11,89 @@ async function createKeyStoreSchema({ data, name = `JsonWebKey` }) {
         //  in the mutation resolvers.
         definitions: `
             type ${name} {
-                # A unique id for the underlying data source
                 keyId: ID!
-                # The key issuer
                 iss: String!
-                # The audience the key is intended for
                 aud: String
-                # The key type represented by the key data
                 kty: String!
-                # The use cases for the key
                 use: String
-                # The operations the key is valid for
                 key_ops: [String!]
-                # The algorithm the key should be applied with
                 alg: String
-                # The unique ID (per issuer) of the key
                 kid: String
-                # X.509 URL
                 x5u: String
-                # X.509 Certificate Chain
                 x5c: String
-                # X.509 Certificate SHA-1 Thumbprint
                 x5t: String
-                # X.509 Certificate SHA-256 Thumbprint
                 x5t_S256: String
 
-                # RSA public exponent
                 e: String
-                # RSA private exponent
                 d: String
-                # Symmetric key
                 k: String
-                # RSA modulus
                 n: String
-                # RSA prime factor
                 p: String
-                # RSA prime factor
                 q: String
-                # x coordinate for Elliptic Curve
                 x: String
-                # y coordinate for Elliptic Curve
                 y: String
-                # d mod (p - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
                 dp: String
-                # d mod (1 - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
                 dq: String
-                # q⁻¹ mod p - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm
                 qi: String
-                # The cryptographic curve to use with the key
                 crv: String
 
-                # The time (ms since Unix epoch) the key was created
                 created: Float
             }
         `,
         rootTypes: [name]
     });
 
+    // Add some documentation
+    composer.getOTC(name).extendFields({
+        keyId: { description: `A unique id for the underlying data source` },
+        iss: { description: `The key issuer` },
+        aud: { description: `The audience the key is intended for` },
+        kty: { description: `The key type represented by the key data` },
+        use: { description: `The use cases for the key` },
+        key_ops: { description: `The operations the key is valid for` },
+        alg: { description: `The algorithm the key should be applied with` },
+        kid: { description: `The unique ID (per issuer) of the key` },
+        x5u: { description: `X.509 URL` },
+        x5c: { description: `X.509 Certificate Chain` },
+        x5t: { description: `X.509 Certificate SHA-1 Thumbprint` },
+        x5t_S256: { description: `X.509 Certificate SHA-256 Thumbprint` },
+        e: { description: `RSA public exponent` },
+        d: { description: `RSA private exponent` },
+        k: { description: `Symmetric key` },
+        n: { description: `RSA modulus` },
+        p: { description: `RSA prime factor` },
+        q: { description: `RSA prime factor` },
+        x: { description: `x coordinate for Elliptic Curve` },
+        y: { description: `y coordinate for Elliptic Curve` },
+        dp: { description: `d mod (p - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm` },
+        dq: { description: `d mod (1 - 1) - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm` },
+        qi: { description: `q⁻¹ mod p - See https://en.wikipedia.org/wiki/RSA_(cryptosystem)#Using_the_Chinese_remainder_algorithm` },
+        crv: { description: `The cryptographic curve to use with the key` },
+        created: { description: `The time (ms since Unix epoch) the key was created` }
+    });
+
     // TODO: Add documentation for find, list, create, upsert, update and delete
-    wrapFindResolver(composer.getOTC(`${name}Query`), `find`);
+    const queryType = composer.getOTC(`${name}Query`);
+    wrapFindResolver(queryType, `find`);
+    queryType.extendFields({
+        find: { description: `Searches for a given key by "kid", "iss" and "aud"` },
+        list: { description: `Searches through all keys using the supplied filters` }
+    });
+
 
     const mutationType = composer.getOTC(`${name}Mutation`);
     wrapMutationResolver(mutationType, `create`);
     wrapMutationResolver(mutationType, `upsert`);
     wrapMutationResolver(mutationType, `update`);
     wrapMutationResolver(mutationType, `delete`);
+
+    queryType.extendFields({
+        create: { description: `Creates a new service key` },
+        upsert: { description: `Creates a new service key if the given "kid", "iss" and "aud" combination does not exist, ` +
+            `or updates it if it does exist` },
+        update: { description: `Updates the service key with the given "kid", "iss" and "aud" combination` },
+        delete: { description: `Deletes the service key with the given "kid", "iss" and "aud" combination` }
+    });
 
     return composer;
 
